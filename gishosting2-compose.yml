@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+
+  postgis:
+    volumes:
+      - ${LIZMAP_DIR}/etc/gishosting2.init.d:/docker-entrypoint-initdb.d
+
+  app:
+    image: nextcloud:apache
+    restart: always
+    volumes:
+      - nextcloud:/var/www/html/
+    environment:
+      VIRTUAL_HOST: 
+      LETSENCRYPT_HOST: 
+      LETSENCRYPT_EMAIL: 
+      NEXTCLOUD_TRUSTED_DOMAINS: 
+      POSTGRES_HOST: postgis
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: ${POSTGRES_USER} 
+      POSTGRES_PASSWORD:  ${POSTGRES_PASSWORD}
+      NEXTCLOUD_ADMIN_PASSWORD: G!sh0st1ng!
+      NEXTCLOUD_ADMIN_USER: gishosting
+      REDIS_HOST: redis
+    depends_on:
+      postgis:
+        condition: service_healthy
+      lizmap:
+        condition: service_started
+    expose:
+      - 80
+    container_name: nextcloud-app-public
+
+  cron:
+    image: nextcloud:apache
+    restart: always
+    volumes:
+      - nextcloud:/var/www/html/
+    entrypoint: /cron.sh
+    depends_on:
+      app:
+        condition: service_started
+    container_name: nextcloud-cron-public
+
+  gishosting2:
+    build:
+      context: ../gishosting2_admin/gishosting2/ # Sets the directory for docker-compose to build.
+    container_name: gishosting2_app
+    # Maps port on the local machine to port on Docker image
+    ports:
+      - "8800:8800"
+    environment:
+      VIRTUAL_HOST: 
+      LETSENCRYPT_HOST: 
+      LETSENCRYPT_EMAIL: 
+      NEXTCLOUD_TRUSTED_DOMAINS: 
+      POSTGRES_HOST: postgis
+      POSTGRES_DB: gishosting2 
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD:  ${POSTGRES_PASSWORD}
+    depends_on:
+      postgis:
+        condition: service_healthy
+        #restart: true
+    # Handles the command used to run the project in the Docker container.
+    command: /entrypoint.sh
+
+
+volumes:
+  postgis_data:
+  nextcloud:
+
