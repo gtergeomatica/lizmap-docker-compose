@@ -1,39 +1,117 @@
 version: '3.8'
-
 services:
-
-  postgis:
+  lizmap:
+    container_name: lizmap-${SUFFIX_NAME}
+    image: 3liz/lizmap-web-client:${LIZMAP_VERSION_TAG}
+    # user: ${LIZMAP_UID}:${LIZMAP_UID}
+    environment:
+      LIZMAP_CACHEREDISDB: '1'
+      LIZMAP_CACHEREDISHOST: redis
+      LIZMAP_CACHESTORAGETYPE: redis
+      LIZMAP_HOME: /srv/lizmap
+      LIZMAP_USER: ${LIZMAP_UID}
+      LIZMAP_WMSSERVERURL: http://map:8080/ows/
+      LIZMAP_CONFIG_INCLUDE: /srv/etc
+      PGSERVICEFILE: /srv/etc/pg_service.conf
+      PGPASSFILE: /srv/etc/pgpass.conf
     volumes:
-      - ${LIZMAP_DIR}/etc/gishosting2.init.d:/docker-entrypoint-initdb.d
+      - ${LIZMAP_PROJECTS}:/srv/projects
+      - ${LIZMAP_DIR}/var/lizmap-theme-config:/www/lizmap/var/lizmap-theme-config
+      - ${LIZMAP_DIR}/var/lizmap-config:/www/lizmap/var/config
+      - ${LIZMAP_DIR}/var/lizmap-db:/www/lizmap/var/db
+      - ${LIZMAP_DIR}/www:/www/lizmap/www
+      - ${LIZMAP_DIR}/www/var/log:/www/lizmap/var/log
+      - ${LIZMAP_DIR}/var/lizmap-modules:/www/lizmap/lizmap-modules
+      - ${LIZMAP_DIR}/var/lizmap-my-packages:/www/lizmap/my-packages
+      - ${LIZMAP_DIR}/etc:/srv/etc:ro
+    command:
+      - php-fpm
+    depends_on:
+      postgis:
+        condition: service_healthy
+    restart: unless-stopped
+  map:
+    container_name: qgis-server-${SUFFIX_NAME}
+    image: 3liz/qgis-map-server:${QGIS_VERSION_TAG}
+    # user: ${LIZMAP_UID}:${LIZMAP_UID}
+    environment:
+      PGSERVICEFILE: /srv/etc/pg_service.conf
+      PGSPASSFILE: /srv/etc/pgpass.conf
+      QGIS_OPTIONS_PATH: /srv/etc/qgis
+      QGIS_SERVER_LIZMAP_REVEAL_SETTINGS: 'yes'
+      QGSRV_API_ENABLED_LIZMAP: 'yes'
+      QGSRV_CACHE_SIZE: '20'
+      QGSRV_CACHE_STRICT_CHECK: 'no'
+      QGSRV_CACHE_ROOTDIR: /srv/projects
+      QGSRV_LOGGING_LEVEL: DEBUG
+      QGSRV_USER: ${LIZMAP_UID}:${LIZMAP_GID}
+      QGSRV_SERVER_PLUGINPATH: /srv/plugins
+      QGSRV_SERVER_RESTARTMON: /srv/.qgis-restart
+      QGSRV_SERVER_WORKERS: ${QGIS_MAP_WORKERS}
+    volumes:
+      - ${LIZMAP_PROJECTS}:/srv/projects
+      - ${LIZMAP_DIR}/plugins:/srv/plugins
+      - ${LIZMAP_DIR}/wps-data:/srv/data
+    ports:
+      - ${OWS_PORT}:8080
+    depends_on:
+      postgis:
+        condition: service_healthy
+    restart: unless-stopped
+  redis:
+    container_name: redis-${SUFFIX_NAME}
+    image: redis:5-alpine
+    volumes:
+      - redis_data:/data
+  web:
+    image: nginx:alpine
+    container_name: ngix-web-${SUFFIX_NAME}
+    # user: ${LIZMAP_UID}:${LIZMAP_GID}
+    volumes:
+      - ${LIZMAP_DIR}/etc/nginx.conf:/etc/nginx/nginx.conf
+      - ${LIZMAP_DIR}/var/log/nginx:/var/log/nginx
+      - ${LIZMAP_DIR}/var/nginx-cache:/var/cache/nginx
+      - ${LIZMAP_DIR}:/srv/lizmap
+    ports:
+      - ${LIZMAP_PORT}:8080
+    depends_on:
+      - lizmap
+    environment:
+      VIRTUAL_HOST: ${LIZMAP_ADDRESS}
+      VIRTUAL_PORT: 8080
+      LETSENCRYPT_HOST: ${LIZMAP_ADDRESS}
+      LETSENCRYPT_EMAIL: ${ADMIN_EMAIL}
 
   app:
     image: nextcloud:apache
     restart: always
+    # user: ${LIZMAP_UID}:${LIZMAP_GID}
     volumes:
       - nextcloud:/var/www/html/
     environment:
-      VIRTUAL_HOST: 
-      LETSENCRYPT_HOST: 
-      LETSENCRYPT_EMAIL: 
-      NEXTCLOUD_TRUSTED_DOMAINS: 
-      POSTGRES_HOST: postgis
-      POSTGRES_DB: nextcloud
-      POSTGRES_USER: ${POSTGRES_USER} 
+      VIRTUAL_HOST: ${NEXCLOUD_ADDRESS}
+      VIRTUAL_PORT: 80
+      LETSENCRYPT_HOST: ${NEXCLOUD_ADDRESS}
+      LETSENCRYPT_EMAIL: ${ADMIN_EMAIL} 
+      NEXTCLOUD_TRUSTED_DOMAINS: ${NEXCLOUD_ADDRESS}
+      POSTGRES_HOST: postgis-private-${SUFFIX_NAME}
+      POSTGRES_DB: ${POSTGRES_NEXTCLOUD_DB}
       POSTGRES_PASSWORD:  ${POSTGRES_PASSWORD}
       NEXTCLOUD_ADMIN_PASSWORD: G!sh0st1ng!
       NEXTCLOUD_ADMIN_USER: gishosting
       REDIS_HOST: redis
     depends_on:
-      postgis:
-        condition: service_healthy
+      #postgis:
+      #  condition: service_healthy
       lizmap:
-        condition: service_started
+         condition: service_started
     expose:
       - 80
-    container_name: nextcloud-app-public
+    container_name: nextcloud-app-${SUFFIX_NAME}
 
   cron:
     image: nextcloud:apache
+    # user: ${LIZMAP_UID}:${LIZMAP_GID}
     restart: always
     volumes:
       - nextcloud:/var/www/html/
@@ -41,23 +119,26 @@ services:
     depends_on:
       app:
         condition: service_started
-    container_name: nextcloud-cron-public
+    container_name: nextcloud-cron-${SUFFIX_NAME}
 
   gishosting2:
+    user: ${LIZMAP_UID}:${LIZMAP_GID}
     build:
       context: ../gishosting2_admin/gishosting2/ # Sets the directory for docker-compose to build.
-    container_name: gishosting2_app
+    container_name: gishosting2-app-${SUFFIX_NAME}
     # Maps port on the local machine to port on Docker image
     ports:
       - "8800:8800"
     environment:
-      VIRTUAL_HOST: 
-      LETSENCRYPT_HOST: 
-      LETSENCRYPT_EMAIL: 
-      NEXTCLOUD_TRUSTED_DOMAINS: 
-      POSTGRES_HOST: postgis
-      POSTGRES_DB: gishosting2 
+      VIRTUAL_HOST: ${GISHOSTING2_ADDRESS}
+      VIRTUAL_PORT: 8800
+      LETSENCRYPT_HOST: ${GISHOSTING2_ADDRESS}
+      LETSENCRYPT_EMAIL: ${ADMIN_EMAIL}
+      NEXTCLOUD_TRUSTED_DOMAINS: ${GISHOSTING2_ADDRESS}
+      POSTGRES_HOST: postgis-private-${SUFFIX_NAME} 
+      POSTGRES_DB: ${POSTGRES_GISHOSTING2_DB} 
       POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_PASSWORD:  ${POSTGRES_PASSWORD}
     depends_on:
       postgis:
@@ -66,8 +147,41 @@ services:
     # Handles the command used to run the project in the Docker container.
     command: /entrypoint.sh
 
+  postgis:
+    image: 3liz/postgis:${POSTGIS_VERSION}
+    container_name: postgis-private-${SUFFIX_NAME}
+    hostname: postgis-private-${SUFFIX_NAME}
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+      - ${LIZMAP_DIR}/etc/gishosting2.init.d:/docker-entrypoint-initdb.d
+    environment:
+      POSTGRES_DB: lizmap
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_LIZMAP_DB: ${POSTGRES_LIZMAP_DB}
+      POSTGRES_LIZMAP_USER: ${POSTGRES_LIZMAP_USER}
+      POSTGRES_LIZMAP_PASSWORD: ${POSTGRES_LIZMAP_PASSWORD}
+    ports:
+      - ${POSTGIS_PORT}:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${POSTGRES_LIZMAP_DB} -q || exit 1"]
+      interval: 10s
+      timeout: 5s
+      start_period: 60s
+    networks:
+      default:
+        aliases:
+          - ${POSTGIS_ALIAS}
 
 volumes:
-  postgis_data:
-  nextcloud:
+    postgis_data:
+        driver: local
+    redis_data:
+        driver: local
+    nextcloud:
+        driver: local
+
+networks:
+  default:
+    external: true
+    name: ngix-proxy-net
 
