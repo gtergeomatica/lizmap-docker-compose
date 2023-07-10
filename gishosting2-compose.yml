@@ -63,7 +63,7 @@ services:
     image: redis:5-alpine
     volumes:
       - redis_data:/data
-  web:
+  ngix:
     image: nginx:alpine
     container_name: ngix-web-${SUFFIX_NAME}
     # user: ${LIZMAP_UID}:${LIZMAP_GID}
@@ -82,7 +82,7 @@ services:
       LETSENCRYPT_HOST: ${LIZMAP_ADDRESS}
       LETSENCRYPT_EMAIL: ${ADMIN_EMAIL}
 
-  app:
+  nextcloud:
     image: nextcloud:apache
     restart: always
     # user: ${LIZMAP_UID}:${LIZMAP_GID}
@@ -92,7 +92,7 @@ services:
       VIRTUAL_HOST: ${NEXCLOUD_ADDRESS}
       VIRTUAL_PORT: 80
       LETSENCRYPT_HOST: ${NEXCLOUD_ADDRESS}
-      LETSENCRYPT_EMAIL: ${ADMIN_EMAIL} 
+      LETSENCRYPT_EMAIL: ${ADMIN_EMAIL}
       NEXTCLOUD_TRUSTED_DOMAINS: ${NEXCLOUD_ADDRESS}
       POSTGRES_HOST: postgis-private-${SUFFIX_NAME}
       POSTGRES_DB: ${POSTGRES_NEXTCLOUD_DB}
@@ -110,7 +110,7 @@ services:
       - 80
     container_name: nextcloud-app-${SUFFIX_NAME}
 
-  cron:
+  nextcloud-cron:
     image: nextcloud:apache
     # user: ${LIZMAP_UID}:${LIZMAP_GID}
     restart: always
@@ -130,14 +130,16 @@ services:
     # Maps port on the local machine to port on Docker image
     ports:
       - "8800:8800"
+    expose:
+      - 8800
     environment:
       VIRTUAL_HOST: ${GISHOSTING2_ADDRESS}
       VIRTUAL_PORT: 8800
       LETSENCRYPT_HOST: ${GISHOSTING2_ADDRESS}
       LETSENCRYPT_EMAIL: ${ADMIN_EMAIL}
-      NEXTCLOUD_TRUSTED_DOMAINS: ${GISHOSTING2_ADDRESS}
-      POSTGRES_HOST: postgis-private-${SUFFIX_NAME} 
-      POSTGRES_DB: ${POSTGRES_GISHOSTING2_DB} 
+      DJANGO_ALLOWED_HOST: ${GISHOSTING2_ADDRESS}
+      POSTGRES_HOST: postgis-private-${SUFFIX_NAME}
+      POSTGRES_DB: ${POSTGRES_GISHOSTING2_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_PASSWORD:  ${POSTGRES_PASSWORD}
@@ -173,6 +175,7 @@ services:
         aliases:
           - ${POSTGIS_ALIAS}
 
+
 volumes:
     postgis_data:
         driver: local
@@ -185,4 +188,3 @@ networks:
   default:
     external: true
     name: ngix-proxy-net
-
