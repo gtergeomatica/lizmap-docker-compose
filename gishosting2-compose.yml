@@ -118,7 +118,7 @@ services:
       - nextcloud:/var/www/html/
     entrypoint: /cron.sh
     depends_on:
-      app:
+      nextcloud:
         condition: service_started
     container_name: nextcloud-cron-${SUFFIX_NAME}
 
