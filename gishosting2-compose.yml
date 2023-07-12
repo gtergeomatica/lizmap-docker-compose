@@ -15,7 +15,7 @@ services:
       PGSERVICEFILE: /srv/etc/pg_service.conf
       PGPASSFILE: /srv/etc/pgpass.conf
     volumes:
-      - ${LIZMAP_PROJECTS}:/srv/projects
+      - nextcloud:/srv/projects:rw
       - ${LIZMAP_DIR}/var/lizmap-theme-config:/www/lizmap/var/lizmap-theme-config
       - ${LIZMAP_DIR}/var/lizmap-config:/www/lizmap/var/config
       - ${LIZMAP_DIR}/var/lizmap-db:/www/lizmap/var/db
@@ -49,7 +49,7 @@ services:
       QGSRV_SERVER_RESTARTMON: /srv/.qgis-restart
       QGSRV_SERVER_WORKERS: ${QGIS_MAP_WORKERS}
     volumes:
-      - ${LIZMAP_PROJECTS}:/srv/projects
+      - nextcloud:/srv/projects:rw
       - ${LIZMAP_DIR}/plugins:/srv/plugins
       - ${LIZMAP_DIR}/wps-data:/srv/data
     ports:
