@@ -167,7 +167,7 @@ services:
     container_name: postgis-private-${SUFFIX_NAME}
     hostname: postgis-private-${SUFFIX_NAME}
     volumes:
-      - postgis_data:/var/lib/postgresql/data
+      - postgis_private:/var/lib/postgresql/data
       - ${LIZMAP_DIR}/etc/gishosting2.init.d:/docker-entrypoint-initdb.d
     environment:
       POSTGRES_DB: lizmap
@@ -187,15 +187,34 @@ services:
         aliases:
           - ${POSTGIS_ALIAS}
 
+  postgis-public:
+    image: postgis/postgis:15-3.3-alpine
+    restart: always
+    volumes:
+      - postgis_public:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_PASSWORD:  ${POSTGRES_PASSWORD}
+      POSTGRES_DB: gis_public
+    container_name: postgis-public-${SUFFIX_NAME}
+    hostname: postgresql-public-${SUFFIX_NAME}
+    ports:
+      - 5434:5432
+    expose:
+      - 5434
+
 
 volumes:
-    postgis_data:
+    postgis_private:
         driver: local
     redis_data:
         driver: local
     nextcloud:
         driver: local
     nextcloud_data:
+        driver: local
+    postgis_public:
         driver: local
 
 networks:
