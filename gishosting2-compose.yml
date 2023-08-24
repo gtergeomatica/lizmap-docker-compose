@@ -30,6 +30,7 @@ services:
       postgis:
         condition: service_healthy
     restart: unless-stopped
+
   map:
     container_name: qgis-server-${SUFFIX_NAME}
     image: 3liz/qgis-map-server:${QGIS_VERSION_TAG}
@@ -58,11 +59,13 @@ services:
       postgis:
         condition: service_healthy
     restart: unless-stopped
+
   redis:
     container_name: redis-${SUFFIX_NAME}
     image: redis:5-alpine
     volumes:
       - redis_data:/data
+
   ngix:
     image: nginx:alpine
     container_name: ngix-web-${SUFFIX_NAME}
@@ -127,6 +130,37 @@ services:
         condition: service_started
     container_name: nextcloud-cron-${SUFFIX_NAME}
 
+  celery:
+    user: ${LIZMAP_UID}:${LIZMAP_GID}
+    build:
+      context: ../gishosting2_admin/gishosting2/
+    container_name: gishosting2-celery-${SUFFIX_NAME}
+    command: celery -A gishosting2 beat -l INFO -s /gishosting2/celerybeat-schedule
+    working_dir: /gishosting2
+    environment:
+      GISHOSTING2_ALLOWED_HOST: ${GISHOSTING2_ALLOWED}
+      GISHOSTING2_TRUSTED_HOST: ${GISHOSTING2_ADDRESS}
+      POSTGRES_HOST: postgis-private-${SUFFIX_NAME}
+      POSTGRES_DB: ${POSTGRES_GISHOSTING2_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_PASSWORD:  ${POSTGRES_PASSWORD}
+      GISHOSTING2_SUPERUSER_USERNAME: ${GISHOSTING2_SUPERUSER_USERNAME}
+      DJANGO_SUPERUSER_PASSWORD: ${GISHOSTING2_SUPERUSER_PASSWORD}
+      GISHOSTING2_SUPERUSER_EMAIL_HOST: ${ADMIN_EMAIL_HOST}
+      GISHOSTING2_SUPERUSER_EMAIL_ADDRESS: ${ADMIN_EMAIL}
+      GISHOSTING2_SUPERUSER_EMAIL_PASSWORD: ${ADMIN_EMAIL_PASSWORD}
+      GISHOSTING2_SUPERUSER_EMAIL_PORT: ${ADMIN_EMAIL_PORT}
+      GISHOSTING2_SUPERUSER_EMAIL_TLS: ${ADMIN_EMAIL_TLS}
+      GISHOSTING2_TEST: ${GISHOSTING2_TESTS}
+      LIZMAP_DB_USER: ${POSTGRES_LIZMAP_DB}
+      POSTGRES_LIZMAP_PASSWORD: ${POSTGRES_LIZMAP_PASSWORD}
+    links:
+      - redis
+    depends_on:
+      - redis
+      - db
+
   gishosting2:
     user: ${LIZMAP_UID}:${LIZMAP_GID}
     build:
@@ -158,6 +192,7 @@ services:
       GISHOSTING2_SUPERUSER_EMAIL_PASSWORD: ${ADMIN_EMAIL_PASSWORD}
       GISHOSTING2_SUPERUSER_EMAIL_PORT: ${ADMIN_EMAIL_PORT}
       GISHOSTING2_SUPERUSER_EMAIL_TLS: ${ADMIN_EMAIL_TLS}
+      GISHOSTING2_TEST: ${GISHOSTING2_TESTS}
       LIZMAP_DB_USER: ${POSTGRES_LIZMAP_DB}
       POSTGRES_LIZMAP_PASSWORD: ${POSTGRES_LIZMAP_PASSWORD}
       POSTGIS_PUBLIC: postgis-public-${SUFFIX_NAME}
