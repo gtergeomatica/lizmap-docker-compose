@@ -159,7 +159,7 @@ services:
       - redis
     depends_on:
       - redis
-      - db
+      - postgis
 
   gishosting2:
     user: ${LIZMAP_UID}:${LIZMAP_GID}
