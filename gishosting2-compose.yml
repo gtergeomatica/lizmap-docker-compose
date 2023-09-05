@@ -135,7 +135,7 @@ services:
     build:
       context: ../gishosting2_admin/gishosting2/
     container_name: gishosting2-celery-${SUFFIX_NAME}
-    command: celery -A gishosting2 beat -l INFO -s /gishosting2/celerybeat-schedule
+    command: celery -A gishosting2 beat -l INFO -s celerybeat-schedule
     working_dir: /gishosting2
     environment:
       GISHOSTING2_ALLOWED_HOST: ${GISHOSTING2_ALLOWED}
@@ -152,7 +152,7 @@ services:
       GISHOSTING2_SUPERUSER_EMAIL_PASSWORD: ${ADMIN_EMAIL_PASSWORD}
       GISHOSTING2_SUPERUSER_EMAIL_PORT: ${ADMIN_EMAIL_PORT}
       GISHOSTING2_SUPERUSER_EMAIL_TLS: ${ADMIN_EMAIL_TLS}
-      GISHOSTING2_TEST: ${GISHOSTING2_TESTS}
+      GISHOSTING2_TEST: ${GISHOSTING2_TEST}
       LIZMAP_DB_USER: ${POSTGRES_LIZMAP_DB}
       POSTGRES_LIZMAP_PASSWORD: ${POSTGRES_LIZMAP_PASSWORD}
     links:
@@ -192,7 +192,7 @@ services:
       GISHOSTING2_SUPERUSER_EMAIL_PASSWORD: ${ADMIN_EMAIL_PASSWORD}
       GISHOSTING2_SUPERUSER_EMAIL_PORT: ${ADMIN_EMAIL_PORT}
       GISHOSTING2_SUPERUSER_EMAIL_TLS: ${ADMIN_EMAIL_TLS}
-      GISHOSTING2_TEST: ${GISHOSTING2_TESTS}
+      GISHOSTING2_TEST: ${GISHOSTING2_TEST}
       LIZMAP_DB_USER: ${POSTGRES_LIZMAP_DB}
       POSTGRES_LIZMAP_PASSWORD: ${POSTGRES_LIZMAP_PASSWORD}
       POSTGIS_PUBLIC: postgis-public-${SUFFIX_NAME}
