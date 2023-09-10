@@ -199,6 +199,7 @@ services:
       POSTGIS_PUBLIC: postgis-public-${SUFFIX_NAME}
       LIZMAP_ADDRESS: ${LIZMAP_ADDRESS}
       NEXTCLOUD_PATH: /srv/projects/
+      NEXCLOUD_ADDRESS: ${NEXCLOUD_ADDRESS}
       SUFFIX_NAME: ${SUFFIX_NAME}
     depends_on:
       nextcloud:
@@ -215,7 +216,7 @@ services:
       - postgis_private:/var/lib/postgresql/data
       - ${LIZMAP_DIR}/etc/gishosting2.init.d:/docker-entrypoint-initdb.d
     environment:
-      POSTGRES_DB: lizmap
+      POSTGRES_DB: ${POSTGRES_LIZMAP_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_LIZMAP_DB: ${POSTGRES_LIZMAP_DB}
       POSTGRES_LIZMAP_USER: ${POSTGRES_LIZMAP_USER}
@@ -241,7 +242,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_PASSWORD:  ${POSTGRES_PASSWORD}
-      POSTGRES_DB: gis_public
+      POSTGRES_DB: ${POSTGIS_PUBLIC_DB}
     container_name: postgis-public-${SUFFIX_NAME}
     hostname: postgis-public-${SUFFIX_NAME}
     ports:
