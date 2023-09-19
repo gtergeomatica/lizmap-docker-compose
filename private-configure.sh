@@ -47,7 +47,9 @@ _makedirs() {
 
 _makenv() {
     echo "installation $INSTALL_DEST";
+    echo "prima $ADMIN_EMAIL"
     source $INSTALL_SOURCE/private.default
+    echo "dopo $ADMIN_EMAIL"
     if [ "$LIZMAP_CUSTOM_ENV" = "1" ]; then
         echo "Copying custom environment"
         cp $INSTALL_SOURCE/private.default $INSTALL_DEST/.env
@@ -78,6 +80,7 @@ _makenv() {
 		LIZMAP_ADDRESS=$LIZMAP_ADDRESS
         VIRTUAL_PORT=$VIRTUAL_PORT
         COPY_COMPOSE_FILE=$COPY_COMPOSE_FILE
+        ADMIN_EMAIL=$ADMIN_EMAIL
 		EOF
     fi
 }

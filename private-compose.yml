@@ -26,9 +26,6 @@ services:
       - ${LIZMAP_DIR}/etc:/srv/etc:ro
     command:
       - php-fpm
-    depends_on:
-      postgis:
-        condition: service_healthy
     restart: unless-stopped
   map:
     container_name: qgis-server-${SUFFIX_NAME}
@@ -54,9 +51,6 @@ services:
       - ${LIZMAP_DIR}/wps-data:/srv/data
     ports:
       - ${OWS_PORT}:8080
-    depends_on:
-      postgis:
-        condition: service_healthy
     restart: unless-stopped
   ngix:
     image: nginx:alpine
@@ -76,6 +70,10 @@ services:
       VIRTUAL_PORT: ${VIRTUAL_PORT}
       LETSENCRYPT_HOST: ${LIZMAP_ADDRESS}
       LETSENCRYPT_EMAIL: ${ADMIN_EMAIL}
+
+volumes:
+    nextcloud_data:
+        driver: local
 
 networks:
   default:
