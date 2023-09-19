@@ -191,12 +191,12 @@ configure() {
         3liz/qgis-map-server:${QGIS_VERSION_TAG} _configure
 
     #
-    # Copy docker-compose file but preserve ownership
+    # Copy gishosting2-compose file but preserve ownership
     # for admin user
     #
     if [ "$COPY_COMPOSE_FILE" = "1" ]; then
         echo "Copying docker compose file"
-        cp $INSTALL_SOURCE/docker-compose.yml $INSTALL_DEST/
+        cp $INSTALL_SOURCE/gishosting2-compose.yml $INSTALL_DEST/
     else
         rm -f $INSTALL_SOURCE/.env
         ln -s $INSTALL_DEST/.env $INSTALL_SOURCE/.env
