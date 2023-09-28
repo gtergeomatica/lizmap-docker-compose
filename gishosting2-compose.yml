@@ -86,7 +86,14 @@ services:
       LETSENCRYPT_EMAIL: ${ADMIN_EMAIL}
 
   nextcloud:
-    image: nextcloud:apache
+    #image: nextcloud:apache
+    build:
+        context: ../nextcloud/
+        dockerfile: Dockerfile
+        args:
+          - LIZMAP_GID=${LIZMAP_GID}
+          - LIZMAP_UID=${LIZMAP_UID}
+          - NEXTCLOUD_DATA_DIR=/nextcloud-data
     restart: always
     # user: ${LIZMAP_UID}:${LIZMAP_GID}
     volumes:
@@ -114,11 +121,16 @@ services:
     expose:
       - 80
     container_name: nextcloud-app-${SUFFIX_NAME}
-    command: >
-      bash -c 'chown www-data:www-data /nextcloud-data && /entrypoint.sh apache2-foreground'
 
   nextcloud-cron:
-    image: nextcloud:apache
+    #image: nextcloud:apache
+    build:
+        context: ../nextcloud/
+        dockerfile: Dockerfile
+        args:
+          - LIZMAP_GID=${LIZMAP_GID}
+          - LIZMAP_UID=${LIZMAP_UID}
+          - NEXTCLOUD_DATA_DIR=/nextcloud-data
     # user: ${LIZMAP_UID}:${LIZMAP_GID}
     restart: always
     volumes:
