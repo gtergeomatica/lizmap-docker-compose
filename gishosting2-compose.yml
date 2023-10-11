@@ -143,7 +143,7 @@ services:
     container_name: nextcloud-cron-${SUFFIX_NAME}
 
   gishosting2:
-    user: ${LIZMAP_UID}:${LIZMAP_GID}
+    #user: ${LIZMAP_UID}:${LIZMAP_GID}
     build:
       context: ../gishosting2_admin/gishosting2/ # Sets the directory for docker-compose to build.
     container_name: gishosting2-app-${SUFFIX_NAME}
@@ -181,8 +181,10 @@ services:
       POSTGIS_PUBLIC_DB: ${POSTGIS_PUBLIC_DB}
       LIZMAP_ADDRESS: ${LIZMAP_ADDRESS}
       NEXTCLOUD_PATH: /srv/projects/
-      NEXCLOUD_ADDRESS: ${NEXCLOUD_ADDRESS}
+      NEXTCLOUD_ADDRESS: ${NEXTCLOUD_ADDRESS}
       SUFFIX_NAME: ${SUFFIX_NAME}
+      LIZMAP_UID: ${LIZMAP_UID}
+      LIZMAP_GID: ${LIZMAP_GID}
     depends_on:
       nextcloud:
         condition: service_started
@@ -191,7 +193,7 @@ services:
     command: /entrypoint.sh
 
   gishosting2-cron:
-    user: ${LIZMAP_UID}:${LIZMAP_GID}
+    #user: ${LIZMAP_UID}:${LIZMAP_GID}
     build:
       context: ../gishosting2_admin/gishosting2/
     container_name: gishosting2-cron-${SUFFIX_NAME}
