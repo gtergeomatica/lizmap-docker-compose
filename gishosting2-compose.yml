@@ -66,9 +66,9 @@ services:
     volumes:
       - redis_data:/data
 
-  ngix:
+  nginx:
     image: nginx:alpine
-    container_name: ngix-web-${SUFFIX_NAME}
+    container_name: nginx-web-${SUFFIX_NAME}
     # user: ${LIZMAP_UID}:${LIZMAP_GID}
     volumes:
       - ${LIZMAP_DIR}/etc/nginx.conf:/etc/nginx/nginx.conf
@@ -283,4 +283,4 @@ volumes:
 networks:
   default:
     external: true
-    name: ngix-proxy-net
+    name: nginx-proxy-net

@@ -67,7 +67,7 @@ services:
     depends_on:
       - lizmap
     environment:
-      VIRTUAL_HOST: map.gishosting.it 
+      VIRTUAL_HOST: map.gishosting.it
       VIRTUAL_PORT: 8080
       LETSENCRYPT_HOST: map.gishosting.it
       LETSENCRYPT_EMAIL: luca.delucchi@gter.it
@@ -79,5 +79,4 @@ volumes:
 networks:
   default:
     external: true
-    name: ngix-proxy-net
-
+    name: nginx-proxy-net

@@ -109,5 +109,5 @@ volumes:
 networks:
   default:
     external: true
-    name: ngix-proxy-net
+    name: nginx-proxy-net
 
