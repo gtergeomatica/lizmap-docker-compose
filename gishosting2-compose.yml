@@ -154,6 +154,7 @@ services:
       - 8800
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/mnt/shared_gishosting2/
     environment:
       VIRTUAL_HOST: ${GISHOSTING2_ADDRESS}
       VIRTUAL_PORT: 8800
@@ -277,6 +278,10 @@ volumes:
         driver: local
     nextcloud_data:
         driver: local
+        driver_opts:
+          type: 'none'
+          o: 'bind'
+          device: '$NEXTCLOUD_PATH'
     postgis_public:
         driver: local
 
