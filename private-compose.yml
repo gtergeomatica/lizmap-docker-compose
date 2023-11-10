@@ -62,12 +62,12 @@ services:
       - ${LIZMAP_DIR}/var/nginx-cache:/var/cache/nginx
       - ${LIZMAP_DIR}:/srv/lizmap
     ports:
-      - ${LIZMAP_PORT}:${VIRTUAL_PORT}
+      - ${LIZMAP_PORT}:8080
     depends_on:
       - lizmap
     environment:
       VIRTUAL_HOST: ${LIZMAP_ADDRESS}
-      VIRTUAL_PORT: ${VIRTUAL_PORT}
+      VIRTUAL_PORT: 8080
       LETSENCRYPT_HOST: ${LIZMAP_ADDRESS}
       LETSENCRYPT_EMAIL: ${ADMIN_EMAIL}
 
