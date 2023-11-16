@@ -5,20 +5,17 @@
 #
 set -e
 
+echo "$INSTALL_DEST $SUFFIX_NAME"
+
 if [ -z $INSTALL_DEST ]; then
-    ENDPOINT=/lizmap
     # Define default install destination as current directory
     INSTALL_DEST=$(pwd)/lizmap
-    mkdir -p $
-else
-    ENDPOINT=/${INSTALL_DEST}
-    INSTALL_DEST=$(pwd)/${INSTALL_DEST}
-    if [ ! -d $INSTALL_DEST ]; then
-        mkdir -p $INSTALL_DEST
-    fi
+    mkdir -p $INSTALL_DEST
 fi
 
-echo "destination $INSTALL_DEST"
+if [ ! -d $INSTALL_DEST ]; then
+    mkdir -p $INSTALL_DEST
+fi
 
 scriptdir=$(realpath `dirname $0`)
 
@@ -46,14 +43,13 @@ _makedirs() {
 }
 
 _makenv() {
-    echo "installation $INSTALL_DEST";
-    echo "prima $ADMIN_EMAIL"
     source $INSTALL_SOURCE/private.default
-    echo "dopo $ADMIN_EMAIL"
+    echo "in _makenv, $LIZMAP_CUSTOM_ENV, $INSTALL_SOURCE, $INSTALL_DEST"
     if [ "$LIZMAP_CUSTOM_ENV" = "1" ]; then
         echo "Copying custom environment"
         cp $INSTALL_SOURCE/private.default $INSTALL_DEST/.env
     else
+    echo "suffix $SUFFIX_NAME"
     LIZMAP_PROJECTS=${LIZMAP_PROJECTS:-"$LIZMAP_DIR/instances"}
     cat > $INSTALL_DEST/.env <<-EOF
 		LIZMAP_PROJECTS=$LIZMAP_PROJECTS
@@ -78,7 +74,6 @@ _makenv() {
 		POSTGIS_ALIAS=$POSTGIS_ALIAS
 		SUFFIX_NAME=$SUFFIX_NAME
 		LIZMAP_ADDRESS=$LIZMAP_ADDRESS
-        VIRTUAL_PORT=$VIRTUAL_PORT
         COPY_COMPOSE_FILE=$COPY_COMPOSE_FILE
         ADMIN_EMAIL=$ADMIN_EMAIL
 		EOF
@@ -136,7 +131,7 @@ EOF
 }
 
 
-_install-plugin() {
+_install_plugin() {
     /src/install-lizmap-plugin.sh
 }
 
@@ -173,33 +168,33 @@ _configure() {
     # Lizmap plugin
     #
     echo "Installing lizmap plugin"
-    _install-plugin
+    _install_plugin
 }
 
 
 configure() {
-    echo "=== Configuring lizmap in $INSTALL_DEST, copying $COPY_COMPOSE_FILE"
+    echo "=== Configuring lizmap in $INSTALL_DEST, install source $INSTALL_SOURCE"
 
     source $INSTALL_SOURCE/private.default
 
-    docker run -it \
+    docker run -i \
         -u $LIZMAP_UID:$LIZMAP_GID \
         --rm \
         -e INSTALL_SOURCE=/install \
-        -e INSTALL_DEST=$ENDPOINT \
-        -e LIZMAP_DIR=$INSTALL_DEST \
-        -e QGSRV_SERVER_PLUGINPATH=$ENDPOINT/plugins \
+        -e INSTALL_DEST=/$INSTALL_DEST \
+        -e LIZMAP_DIR=$INSTALL_SOURCE/$INSTALL_DEST \
+        -e QGSRV_SERVER_PLUGINPATH=/$INSTALL_DEST/plugins \
+        -e SUFFIX_NAME=$SUFFIX_NAME \
         -v $INSTALL_SOURCE:/install \
-        -v $INSTALL_DEST:$ENDPOINT \
+        -v $INSTALL_SOURCE/$INSTALL_DEST:/$INSTALL_DEST \
         -v $scriptdir:/src \
         --entrypoint /src/private-configure.sh \
         3liz/qgis-map-server:${QGIS_VERSION_TAG} _configure
 
     #
-    # Copy private-compose file but preserve ownership
+    # Copy gishosting2-compose file but preserve ownership
     # for admin user
     #
-    echo "copy file $COPY_COMPOSE_FILE"
     if [ "$COPY_COMPOSE_FILE" = "1" ]; then
         echo "Copying docker compose file"
         cp $INSTALL_SOURCE/private-compose.yml $INSTALL_DEST/
@@ -230,7 +225,7 @@ clean() {
     fi
     source $INSTALL_DEST/.env
     if [ "$LIZMAP_UID" != "$(id -u)" ]; then
-        docker run -it \
+        docker run -i \
             -u $LIZMAP_UID:$LIZMAP_GID \
             --rm \
             -e INSTALL_DEST=/lizmap \
