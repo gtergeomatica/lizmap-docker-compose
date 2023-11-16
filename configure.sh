@@ -89,6 +89,7 @@ _makenv() {
         HETZNER_ZONE_ID=$HETZNER_ZONE_ID
         HETZNER_TTL=$HETZNER_TTL
         SERVER_IP=$SERVER_IP
+        BACKUP_DATA_DIR=$BACKUP_DATA_DIR
 		EOF
     fi
 }

@@ -113,6 +113,7 @@ services:
       NEXTCLOUD_ADMIN_USER: ${NEXTCLOUD_USERNAME}
       REDIS_HOST: redis
       NEXTCLOUD_DATA_DIR: /nextcloud-data
+      BACKUP_DATA_DIR: ${BACKUP_DATA_DIR}
     depends_on:
       #postgis:
       #  condition: service_healthy
@@ -187,6 +188,11 @@ services:
       SUFFIX_NAME: ${SUFFIX_NAME}
       LIZMAP_UID: ${LIZMAP_UID}
       LIZMAP_GID: ${LIZMAP_GID}
+      HETZNER_API_KEY: ${HETZNER_API_KEY}
+      HETZNER_ZONE_ID: ${HETZNER_ZONE_ID}
+      HETZNER_TTL: ${HETZNER_TTL}
+      SERVER_IP: ${SERVER_IP}
+      BACKUP_DATA_DIR: ${BACKUP_DATA_DIR}
     depends_on:
       nextcloud:
         condition: service_started
@@ -277,6 +283,7 @@ volumes:
     nextcloud:
         driver: local
     nextcloud_data:
+        name: nextcloud_data
         driver: local
         driver_opts:
           type: 'none'
