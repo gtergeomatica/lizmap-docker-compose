@@ -207,6 +207,10 @@ services:
     container_name: gishosting2-cron-${SUFFIX_NAME}
     command: python manage.py run_huey
     working_dir: /gishosting2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${BACKUP_DATA_DIR}:${BACKUP_DATA_DIR}
+      - nextcloud_data:/nextcloud-data
     environment:
       GISHOSTING2_ALLOWED_HOST: ${GISHOSTING2_ALLOWED}
       GISHOSTING2_TRUSTED_HOST: ${GISHOSTING2_ADDRESS}
@@ -225,6 +229,9 @@ services:
       GISHOSTING2_TEST: ${GISHOSTING2_TEST}
       LIZMAP_DB_USER: ${POSTGRES_LIZMAP_DB}
       POSTGRES_LIZMAP_PASSWORD: ${POSTGRES_LIZMAP_PASSWORD}
+      BACKUP_DATA_DIR: ${BACKUP_DATA_DIR}
+      POSTGIS_PUBLIC: postgis-public-${SUFFIX_NAME}
+      POSTGIS_PUBLIC_DB: ${POSTGIS_PUBLIC_DB}
     links:
       - redis
     depends_on:
