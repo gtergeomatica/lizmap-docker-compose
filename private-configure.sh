@@ -68,6 +68,7 @@ _makenv() {
 		QGIS_MAP_WORKERS=$QGIS_MAP_WORKERS
 		WPS_NUM_WORKERS=$WPS_NUM_WORKERS
 		LIZMAP_PORT=$LIZMAP_PORT
+        LIZMAP_ONLY_PORT=$LIZMAP_ONLY_PORT
 		OWS_PORT=$OWS_PORT
 		WPS_PORT=$WPS_PORT
 		POSTGIS_PORT=$POSTGIS_PORT
@@ -76,6 +77,7 @@ _makenv() {
 		LIZMAP_ADDRESS=$LIZMAP_ADDRESS
         COPY_COMPOSE_FILE=$COPY_COMPOSE_FILE
         ADMIN_EMAIL=$ADMIN_EMAIL
+        NEXTCLOUD_PATH=$NEXTCLOUD_PATH
 		EOF
     fi
 }
@@ -90,20 +92,6 @@ port=$POSTGRES_PORT
 dbname=$POSTGRES_LIZMAP_DB
 user=$POSTGRES_LIZMAP_USER
 password=$POSTGRES_LIZMAP_PASSWORD
-
-[nexcloud_local]
-host=$POSTGIS_ALIAS
-port=$POSTGRES_PORT
-dbname=$POSTGRES_NEXTCLOUD_DB
-user=$POSTGRES_USER
-password=$POSTGRES_PASSWORD
-
-[gishosting2_local]
-host=$POSTGIS_ALIAS
-port=$POSTGRES_PORT
-dbname=$POSTGRES_GISHOSTING2_DB
-user=$POSTGRES_USER
-password=$POSTGRES_PASSWORD
 
 [db_${SUFFIX_NAME}]
 host=$POSTGIS_ALIAS
@@ -121,11 +109,11 @@ _makelizmapprofiles() {
 [jdb:jauth]
 driver=pgsql
 host=$POSTGIS_ALIAS
-port=5432
-database=$POSTGRES_LIZMAP_DB
-user=$POSTGRES_LIZMAP_USER
-password="$POSTGRES_LIZMAP_PASSWORD"
-search_path=lizmap,public,nextcloud,gishosting2,db_${SUFFIX_NAME}
+port=$POSTGRES_PORT
+database=db_${SUFFIX_NAME}
+user=$POSTGRES_USER
+password="$POSTGRES_PASSWORD"
+search_path=public,db_${SUFFIX_NAME}
 EOF
     chmod 0600 $INSTALL_DEST/etc/profiles.d/lizmap_local.ini.php
 }
