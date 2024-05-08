@@ -24,6 +24,8 @@ services:
       - ${LIZMAP_DIR}/var/lizmap-modules:/www/lizmap/lizmap-modules
       - ${LIZMAP_DIR}/var/lizmap-my-packages:/www/lizmap/my-packages
       - ${LIZMAP_DIR}/etc:/srv/etc:ro
+      # Shared with nextcloud
+      - nextcloud:/nextcloud
     command:
       - php-fpm
     depends_on:
