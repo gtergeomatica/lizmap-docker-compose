@@ -1,0 +1,5 @@
+max_connections = 1000
+shared_buffers = 500MB
+effective_cache_size = 1GB
+work_mem = 100MB
+maintenance_work_mem = 1GB

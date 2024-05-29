@@ -279,8 +279,10 @@ services:
   postgis-public:
     image: postgis/postgis:15-3.3-alpine
     restart: always
+    command: -c config_file=/etc/postgresql.conf
     volumes:
       - postgis_public:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql.conf
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PORT: ${POSTGRES_PORT}
