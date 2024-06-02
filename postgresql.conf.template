@@ -1,3 +1,4 @@
+listen_addresses = '*'
 max_connections = 1000
 shared_buffers = 500MB
 effective_cache_size = 1GB
