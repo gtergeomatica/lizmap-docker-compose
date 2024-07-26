@@ -34,7 +34,7 @@ services:
       dockerfile: Dockerfile
     user: ${LIZMAP_UID}:${LIZMAP_GID}
     volumes:
-      - nextcloud_data:/srv/projects:rw
+      - ${NEXTCLOUD_PATH}/${SUFFIX_NAME}/files/:/srv/projects:rw
       - ${LIZMAP_DIR}/plugins:/srv/plugins
       - ${LIZMAP_DIR}/etc:/srv/etc:ro
     environment:
