@@ -51,7 +51,9 @@ services:
       QGIS_SERVER_CACHE_SIZE: 200
       QGIS_SERVER_CAPABILITIES_CACHE_SIZE: 100
       #QGIS_SERVER_PARALLEL_RENDERING: 1
-      DEBUG: 1
+      QGIS_SERVER_IGNORE_BAD_LAYERS: 1
+      MAX_CACHE_LAYERS: 2000
+    DEBUG: 1
     restart: unless-stopped
 
   map:
