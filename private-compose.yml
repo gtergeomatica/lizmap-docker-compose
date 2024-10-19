@@ -32,6 +32,7 @@ services:
     build: 
       context: ../../qgis/docker/qgis-server
       dockerfile: Dockerfile
+    image: gishosting/qgisserver:latest
     user: ${LIZMAP_UID}:${LIZMAP_GID}
     volumes:
       - ${NEXTCLOUD_PATH}/${SUFFIX_NAME}/files/:/srv/projects:rw

@@ -36,6 +36,7 @@ services:
     build: 
       context: ../qgis/docker/qgis-server
       dockerfile: Dockerfile
+    image: gishosting/qgisserver:latest
     user: ${LIZMAP_UID}:${LIZMAP_GID}
     volumes:
       - nextcloud_data:/srv/projects:rw
@@ -100,6 +101,7 @@ services:
           - LIZMAP_GID=${LIZMAP_GID}
           - LIZMAP_UID=${LIZMAP_UID}
           - NEXTCLOUD_DATA_DIR=/nextcloud-data
+    image: gishosting/nextcloud:latest
     restart: always
     # user: ${LIZMAP_UID}:${LIZMAP_GID}
     volumes:
@@ -138,6 +140,7 @@ services:
           - LIZMAP_GID=${LIZMAP_GID}
           - LIZMAP_UID=${LIZMAP_UID}
           - NEXTCLOUD_DATA_DIR=/nextcloud-data
+    image: gishosting/nextcloud:latest
     # user: ${LIZMAP_UID}:${LIZMAP_GID}
     restart: always
     volumes:
@@ -153,6 +156,7 @@ services:
     #user: ${LIZMAP_UID}:${LIZMAP_GID}
     build:
       context: ../gishosting2_admin/gishosting2/ # Sets the directory for docker-compose to build.
+    image: gishosting/gishosting:latest
     container_name: gishosting2-app-${SUFFIX_NAME}
     # Maps port on the local machine to port on Docker image
     ports:
@@ -212,6 +216,7 @@ services:
     #user: ${LIZMAP_UID}:${LIZMAP_GID}
     build:
       context: ../gishosting2_admin/gishosting2/
+    image: gishosting/gishosting:latest
     container_name: gishosting2-cron-${SUFFIX_NAME}
     command: python manage.py run_huey
     working_dir: /gishosting2
