@@ -31,9 +31,13 @@ mkdir /tmp/css
 docker cp lizmap-$USER:/www/lizmap/www/themes/default/css/. /tmp/css/
 
 docker-compose -f private-compose.yml up -d
-docker exec -it qgisserver-$USER qgis-plugin-manager update
-docker exec -it qgisserver-$USER qgis-plugin-manager upgrade
+docker exec -u 1000 -it qgisserver-$USER qgis-plugin-manager update
+docker exec -u 1000 -it qgisserver-$USER qgis-plugin-manager upgrade
+docker stop qgisserver-$USER
+docker start qgisserver-$USER
 
 docker cp /tmp/css/. lizmap-$USER:/www/lizmap/www/themes/default/css/
 rm -rf /tmp/css
+RED='\033[0;31m'
+echo "${RED}Remember to check the file $USER/var/lizmap-config/lizmapConfig.ini.php"
 cd ..
