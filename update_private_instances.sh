@@ -39,5 +39,5 @@ docker start qgisserver-$USER
 docker cp /tmp/css/. lizmap-$USER:/www/lizmap/www/themes/default/css/
 rm -rf /tmp/css
 RED='\033[0;31m'
-echo "${RED}Remember to check the file $USER/var/lizmap-config/lizmapConfig.ini.php"
+echo -e "${RED}Remember to check the file $USER/var/lizmap-config/lizmapConfig.ini.php"
 cd ..
