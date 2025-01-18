@@ -166,6 +166,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./:/mnt/shared_gishosting2/
+      - nextcloud_data:/nextcloud-data
       - ${BACKUP_DATA_DIR}:${BACKUP_DATA_DIR}
     environment:
       VIRTUAL_HOST: ${GISHOSTING2_ADDRESS}
