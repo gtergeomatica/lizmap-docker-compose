@@ -24,6 +24,7 @@ services:
       - ${LIZMAP_DIR}/var/lizmap-modules:/www/lizmap/lizmap-modules
       - ${LIZMAP_DIR}/var/lizmap-my-packages:/www/lizmap/my-packages
       - ${LIZMAP_DIR}/etc:/srv/etc:ro
+      - ${LIZMAP_DIR}/etc/www.conf:/etc/php81/php-fpm.d/www.conf
     command:
       - php-fpm
     depends_on:
@@ -33,7 +34,7 @@ services:
 
   qgis-server:
     container_name: qgisserver-${SUFFIX_NAME}
-    build: 
+    build:
       context: ../qgis/docker/qgis-server
       dockerfile: Dockerfile
     image: gishosting/qgisserver:latest
