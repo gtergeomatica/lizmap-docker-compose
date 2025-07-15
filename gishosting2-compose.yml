@@ -10,7 +10,7 @@ services:
       LIZMAP_CACHESTORAGETYPE: redis
       LIZMAP_HOME: /srv/lizmap
       LIZMAP_USER: ${LIZMAP_UID}
-      LIZMAP_WMSSERVERURL: http://map:8080/ows/
+      LIZMAP_WMSSERVERURL: http://map:80/qgis-server/
       LIZMAP_CONFIG_INCLUDE: /srv/etc
       PGSERVICEFILE: /srv/etc/pg_service.conf
       PGPASSFILE: /srv/etc/pgpass.conf
