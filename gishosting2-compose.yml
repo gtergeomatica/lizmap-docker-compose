@@ -14,12 +14,12 @@ services:
       LIZMAP_CONFIG_INCLUDE: /srv/etc
       PGSERVICEFILE: /srv/etc/pg_service.conf
       PGPASSFILE: /srv/etc/pgpass.conf
-      PM_MAX_CHILDREN=${PM_MAX_CHILDREN}
-      PM_START_SERVERS=${PM_START_SERVERS}
-      PM_MIN_SPARE_SERVERS=${PM_MIN_SPARE_SERVERS}
-      PM_MAX_SPARE_SERVERS=${PM_MAX_SPARE_SERVERS}
-      PM_MAX_REQUESTS=${PM_MAX_REQUESTS}
-      PM_PROCESS_IDLE_TIMEOUT=${PM_PROCESS_IDLE_TIMEOUT}
+      PM_MAX_CHILDREN: ${PM_MAX_CHILDREN}
+      PM_START_SERVERS: ${PM_START_SERVERS}
+      PM_MIN_SPARE_SERVERS: ${PM_MIN_SPARE_SERVERS}
+      PM_MAX_SPARE_SERVERS: ${PM_MAX_SPARE_SERVERS}
+      PM_MAX_REQUESTS: ${PM_MAX_REQUESTS}
+      PM_PROCESS_IDLE_TIMEOUT: ${PM_PROCESS_IDLE_TIMEOUT}
     volumes:
       - nextcloud_data:/srv/projects:rw
       - ${LIZMAP_DIR}/var/lizmap-theme-config:/www/lizmap/var/lizmap-theme-config
