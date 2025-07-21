@@ -32,6 +32,9 @@ services:
       - ${LIZMAP_DIR}/etc:/srv/etc:ro
     command:
       - php-fpm
+    deploy:
+      mode: replicated
+      replicas: ${LIZMAP_REPLICAS}
     depends_on:
       postgis:
         condition: service_healthy
@@ -61,6 +64,9 @@ services:
       QGIS_SERVER_IGNORE_BAD_LAYERS: 1
       MAX_CACHE_LAYERS: 2000
       DEBUG: 1
+    deploy:
+      mode: replicated
+      replicas: ${LIZMAP_REPLICAS}
     restart: unless-stopped
 
   map:
@@ -72,6 +78,9 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - qgis-server
+    deploy:
+      mode: replicated
+      replicas: ${LIZMAP_REPLICAS}
 
   redis:
     container_name: redis-${SUFFIX_NAME}
@@ -92,6 +101,9 @@ services:
       - ${LIZMAP_PORT}:8080
     depends_on:
       - lizmap
+    deploy:
+      mode: replicated
+      replicas: ${LIZMAP_REPLICAS}
     environment:
       VIRTUAL_HOST: ${LIZMAP_ADDRESS}
       VIRTUAL_PORT: 8080
