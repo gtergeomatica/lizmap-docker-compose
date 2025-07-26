@@ -84,7 +84,7 @@ services:
 
   redis:
     container_name: redis-${SUFFIX_NAME}
-    image: redis:5-alpine
+    image: redis:6-alpine
     volumes:
       - redis_data:/data
 
@@ -311,7 +311,7 @@ services:
           - ${POSTGIS_ALIAS}
 
   postgis-public:
-    image: postgis/postgis:15-3.3-alpine
+    image: postgis/postgis:16-3.5-alpine
     restart: always
     command: -c config_file=/etc/postgresql.conf
     volumes:
