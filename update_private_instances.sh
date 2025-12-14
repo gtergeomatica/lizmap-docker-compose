@@ -30,7 +30,7 @@ cd $USER
 mkdir /tmp/css
 docker cp lizmap-$USER:/www/lizmap/www/themes/default/css/. /tmp/css/
 
-docker-compose -f private-compose.yml up -d
+docker compose -f private-compose.yml up -d
 docker exec -u 1000 -it qgisserver-$USER qgis-plugin-manager update
 docker exec -u 1000 -it qgisserver-$USER qgis-plugin-manager upgrade
 docker stop qgisserver-$USER
