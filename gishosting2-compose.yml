@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   lizmap:
     container_name: lizmap-${SUFFIX_NAME}
@@ -10,7 +9,7 @@ services:
       LIZMAP_CACHESTORAGETYPE: redis
       LIZMAP_HOME: /srv/lizmap
       LIZMAP_USER: ${LIZMAP_UID}
-      LIZMAP_WMSSERVERURL: http://map:80/qgis-server/
+      LIZMAP_WMSSERVERURL: http://map:8080/ows/
       LIZMAP_CONFIG_INCLUDE: /srv/etc
       PGSERVICEFILE: /srv/etc/pg_service.conf
       PGPASSFILE: /srv/etc/pgpass.conf
@@ -21,89 +20,86 @@ services:
       PM_MAX_REQUESTS: ${PM_MAX_REQUESTS}
       PM_PROCESS_IDLE_TIMEOUT: ${PM_PROCESS_IDLE_TIMEOUT}
     volumes:
-      - nextcloud_data:/srv/projects:rw
-      - ${LIZMAP_DIR}/var/lizmap-theme-config:/www/lizmap/var/lizmap-theme-config
-      - ${LIZMAP_DIR}/var/lizmap-config:/www/lizmap/var/config
-      - ${LIZMAP_DIR}/var/lizmap-db:/www/lizmap/var/db
-      - ${LIZMAP_DIR}/www:/www/lizmap/www
-      - ${LIZMAP_DIR}/www/var/log:/www/lizmap/var/log
-      - ${LIZMAP_DIR}/var/lizmap-modules:/www/lizmap/lizmap-modules
-      - ${LIZMAP_DIR}/var/lizmap-my-packages:/www/lizmap/my-packages
-      - ${LIZMAP_DIR}/etc:/srv/etc:ro
+      - { type: volume, source: nextcloud_data, target: /srv/projects}
+      - { type: bind, source: "${LIZMAP_PROJECTS}", target: /srv/projects }
+      - { type: bind, source: "${LIZMAP_DIR}/var/lizmap-theme-config", target: /www/lizmap/var/lizmap-theme-config }
+      - { type: bind, source: "${LIZMAP_DIR}/var/lizmap-config", target: /www/lizmap/var/config }
+      - { type: bind, source: "${LIZMAP_DIR}/var/lizmap-db",     target: /www/lizmap/var/db }
+      - { type: bind, source: "${LIZMAP_DIR}/var/lizmap-log",     target: /www/lizmap/var/log }
+      - { type: bind, source: "${LIZMAP_DIR}/www", target: /www/lizmap/www }
+      - { type: bind, source: "${LIZMAP_DIR}/var/lizmap-modules", target: /www/lizmap/lizmap-modules }
+      - { type: bind, source: "${LIZMAP_DIR}/var/lizmap-my-packages", target: /www/lizmap/my-packages }
+      - { type: bind, source: "${LIZMAP_DIR}/cache", target: /srv/cache }
+      - { type: bind, source: "${LIZMAP_DIR}/etc", target: /srv/etc, read_only: true }
     command:
       - php-fpm
-    deploy:
-      mode: replicated
-      replicas: ${LIZMAP_REPLICAS}
+    depends_on:
+      postgis:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      map:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+        test: ["CMD-SHELL", "php-fpm-healthcheck || exit 1"]
+        interval: 30s
+        timeout: 30s
+        start_interval: 2s
+        start_period: 10s
+  map:
+    image: 3liz/qgis-map-server:${QGIS_VERSION_TAG}
+    user: ${LIZMAP_UID}:${LIZMAP_UID}
+    environment:
+      3LIZ_SKIP_STATS: 1
+      GDAL_CACHEMAX: 2048
+      PGSERVICEFILE: /srv/etc/pg_service.conf
+      PGSPASSFILE: /srv/etc/pgpass.conf
+      QGIS_OPTIONS_PATH: /srv/etc/qgis
+      QGIS_SERVER_LIZMAP_REVEAL_SETTINGS: 'yes'
+      QGIS_SERVER_TRUST_LAYER_METADATA: 'True'
+      QGIS_SERVER_FORCE_READONLY_LAYERS: 'True'
+      QGIS_SERVER_APPLICATION_NAME: 'QGIS Server LTR'
+      QGSRV_API_ENABLED_LIZMAP: 'yes'
+      QGSRV_CACHE_SIZE: '20'
+      QGSRV_CACHE_STRICT_CHECK: 'no'
+      QGSRV_CACHE_ROOTDIR: /srv/projects
+      QGSRV_LOGGING_LEVEL: DEBUG
+      QGSRV_USER: ${LIZMAP_UID}:${LIZMAP_GID}
+      QGSRV_SERVER_PLUGINPATH: /srv/plugins
+      QGSRV_SERVER_RESTARTMON: /srv/.qgis-restart
+      QGSRV_SERVER_WORKERS: ${QGIS_MAP_WORKERS}
+      QGSRV_SERVER_TIMEOUT: 30
+    volumes:
+      - { type: bind, source: "${LIZMAP_PROJECTS}", target: /srv/projects }
+      - { type: bind, source: "${LIZMAP_DIR}/plugins", target: /srv/plugins }
+      - { type: bind, source: "${LIZMAP_DIR}/wps-data", target: /srv/data }
+      - { type: bind, source: "${LIZMAP_DIR}/etc", target: /srv/etc, read_only: true }
+    ports:
+      - ${OWS_PORT}:8080
     depends_on:
       postgis:
         condition: service_healthy
     restart: unless-stopped
-
-  qgis-server:
-    container_name: qgisserver-${SUFFIX_NAME}
-    build:
-      context: ../qgis/docker/qgis-server
-      dockerfile: Dockerfile
-    image: gishosting/qgisserver:latest
-    user: ${LIZMAP_UID}:${LIZMAP_GID}
-    volumes:
-      - nextcloud_data:/srv/projects:rw
-      - ${LIZMAP_DIR}/plugins:/srv/plugins
-      - ${LIZMAP_DIR}/etc:/srv/etc:ro
-    environment:
-      PGSERVICEFILE: /srv/etc/pg_service.conf
-      PGSPASSFILE: /srv/etc/pgpass.conf
-      LANG: en_EN.UTF-8
-      QGIS_SERVER_LOG_LEVEL: 0
-      QGIS_SERVER_LIZMAP_REVEAL_SETTINGS: 1
-      QGIS_PLUGINPATH: /srv/plugins
-      QGIS_SERVER_CACHE_SIZE: 200
-      QGIS_SERVER_CAPABILITIES_CACHE_SIZE: 100
-      #QGIS_SERVER_PARALLEL_RENDERING: 1
-      QGIS_SERVER_IGNORE_BAD_LAYERS: 1
-      MAX_CACHE_LAYERS: 2000
-      DEBUG: 1
-    deploy:
-      mode: replicated
-      replicas: ${LIZMAP_REPLICAS}
-    restart: unless-stopped
-
-  map:
-    container_name: map-${SUFFIX_NAME}
-    image: nginx:alpine
-    ports:
-      - ${OWS_PORT}:80
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      - qgis-server
-    deploy:
-      mode: replicated
-      replicas: ${LIZMAP_REPLICAS}
-
   redis:
     container_name: redis-${SUFFIX_NAME}
-    image: redis:6-alpine
+    image: redis:7-alpine
     volumes:
-      - redis_data:/data
-
-  nginx:
+      - { type: volume, source: redis_data, target: /data }
+  web:
     image: nginx:alpine
     container_name: nginx-web-${SUFFIX_NAME}
     # user: ${LIZMAP_UID}:${LIZMAP_GID}
     volumes:
-      - ${LIZMAP_DIR}/etc/nginx.conf:/etc/nginx/nginx.conf
-      - ${LIZMAP_DIR}/var/log/nginx:/var/log/nginx
-      - ${LIZMAP_DIR}/var/nginx-cache:/var/cache/nginx
-      - ${LIZMAP_DIR}:/srv/lizmap
+      - { type: bind, source: "${LIZMAP_DIR}/etc/nginx.conf", target: /etc/nginx/nginx.conf }
+      - { type: bind, source: "${LIZMAP_DIR}/var/log/nginx", target: /var/log/nginx }
+      - { type: bind, source: "${LIZMAP_DIR}/var/nginx-cache", target: /var/cache/nginx }
+      - { type: bind, source: "${LIZMAP_DIR}", target: /srv/lizmap }
     ports:
       - ${LIZMAP_PORT}:8080
     depends_on:
-      - lizmap
-    deploy:
-      mode: replicated
-      replicas: ${LIZMAP_REPLICAS}
+      lizmap:
+        condition: service_healthy
     environment:
       VIRTUAL_HOST: ${LIZMAP_ADDRESS}
       VIRTUAL_PORT: 8080
@@ -123,8 +119,8 @@ services:
     restart: always
     # user: ${LIZMAP_UID}:${LIZMAP_GID}
     volumes:
-      - nextcloud:/var/www/html/
-      - nextcloud_data:/nextcloud-data
+      - { type: volume, source: nextcloud, target: /var/www/html/ }
+      - { type: volume, source: nextcloud_data, target: /nextcloud-data }
     environment:
       VIRTUAL_HOST: ${NEXTCLOUD_ADDRESS}
       VIRTUAL_PORT: 80
@@ -162,8 +158,8 @@ services:
     # user: ${LIZMAP_UID}:${LIZMAP_GID}
     restart: always
     volumes:
-      - nextcloud:/var/www/html/
-      - nextcloud_data:/nextcloud-data
+      - { type: volume, source: nextcloud, target: /var/www/html/ }
+      - { type: volume, source: nextcloud_data, target: /nextcloud-data }
     entrypoint: /cron.sh
     depends_on:
       nextcloud:
@@ -182,10 +178,10 @@ services:
     expose:
       - 8800
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./:/mnt/shared_gishosting2/
-      - nextcloud_data:/nextcloud-data
-      - ${BACKUP_DATA_DIR}:${BACKUP_DATA_DIR}
+      - { type: bind, source: /var/run/docker.sock, target: /var/run/docker.sock }
+      - { type: bind, source: ./, target: /mnt/shared_gishosting2/ }
+      - { type: volume, source: nextcloud_data, target: /nextcloud-data }
+      - { type: bind, source: "${BACKUP_DATA_DIR}", target: "${BACKUP_DATA_DIR}" }
     environment:
       VIRTUAL_HOST: ${GISHOSTING2_ADDRESS}
       VIRTUAL_PORT: 8800
@@ -242,9 +238,9 @@ services:
     command: python manage.py run_huey
     working_dir: /gishosting2
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${BACKUP_DATA_DIR}:${BACKUP_DATA_DIR}
-      - nextcloud_data:/nextcloud-data
+      - { type: bind, source: /var/run/docker.sock, target: /var/run/docker.sock }
+      - { type: bind, source: "${BACKUP_DATA_DIR}", target: "${BACKUP_DATA_DIR}" }
+      - { type: volume, source: nextcloud_data, target: /nextcloud-data }
     environment:
       GISHOSTING2_ALLOWED_HOST: ${GISHOSTING2_ALLOWED}
       GISHOSTING2_TRUSTED_HOST: ${GISHOSTING2_ADDRESS}
@@ -290,8 +286,8 @@ services:
     container_name: postgis-private-${SUFFIX_NAME}
     hostname: postgis-private-${SUFFIX_NAME}
     volumes:
-      - postgis_private:/var/lib/postgresql/data
-      - ${LIZMAP_DIR}/etc/gishosting2.init.d:/docker-entrypoint-initdb.d
+      - { type: volume, source: postgis_private, target: /var/lib/postgresql/data }
+      - { type: bind, source: "${LIZMAP_DIR}/etc/postgres.init.d", target: /docker-entrypoint-initdb.d }
     environment:
       POSTGRES_DB: ${POSTGRES_LIZMAP_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -302,9 +298,10 @@ services:
       - ${POSTGIS_PORT}:5432
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d ${POSTGRES_LIZMAP_DB} -q || exit 1"]
-      interval: 10s
-      timeout: 5s
-      start_period: 60s
+      interval: 30s
+      timeout: 30s
+      start_interval: 2s
+      start_period: 10s
     networks:
       default:
         aliases:
@@ -315,8 +312,8 @@ services:
     restart: always
     command: -c config_file=/etc/postgresql.conf
     volumes:
-      - postgis_public:/var/lib/postgresql/data
-      - ./postgresql.conf:/etc/postgresql.conf
+      - { type: volume, source: postgis_public, target: /var/lib/postgresql/data }
+      - { type: bind, source: ./postgresql.conf, target: /etc/postgresql.conf }
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PORT: ${POSTGRES_PORT}
@@ -351,3 +348,4 @@ networks:
   default:
     external: true
     name: nginx-proxy-net
+
