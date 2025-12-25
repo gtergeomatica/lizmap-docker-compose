@@ -48,6 +48,7 @@ services:
         start_interval: 2s
         start_period: 10s
   map:
+    container_name: qgisserver-${SUFFIX_NAME}
     image: 3liz/qgis-map-server:${QGIS_VERSION_TAG}
     user: ${LIZMAP_UID}:${LIZMAP_UID}
     environment:
