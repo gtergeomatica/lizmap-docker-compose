@@ -5,7 +5,7 @@ services:
     image: 3liz/lizmap-web-client:${LIZMAP_VERSION_TAG}
     # user: ${LIZMAP_UID}:${LIZMAP_UID}
     environment:
-      LIZMAP_CACHEREDISDB: '{REDISID}'
+      LIZMAP_CACHEREDISDB: ${REDISID}
       LIZMAP_CACHEREDISHOST: redis
       LIZMAP_CACHESTORAGETYPE: redis
       LIZMAP_HOME: /srv/lizmap
