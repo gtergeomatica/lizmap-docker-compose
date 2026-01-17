@@ -35,10 +35,6 @@ services:
     command:
       - php-fpm
     depends_on:
-      postgis:
-        condition: service_healthy
-      redis:
-        condition: service_started
       map:
         condition: service_started
     restart: unless-stopped
@@ -50,6 +46,7 @@ services:
         start_period: 10s
 
   map:
+    container_name: qgisserver-${SUFFIX_NAME}
     image: 3liz/qgis-map-server:${QGIS_VERSION_TAG}
     user: ${LIZMAP_UID}:${LIZMAP_UID}
     environment:
@@ -63,7 +60,6 @@ services:
       QGIS_SERVER_FORCE_READONLY_LAYERS: 'True'
       QGIS_SERVER_APPLICATION_NAME: 'QGIS Server LTR'
       QGIS_SERVER_LOG_LEVEL: 0
-      QGIS_SERVER_LIZMAP_REVEAL_SETTINGS: 1
       QGIS_PLUGINPATH: /srv/plugins
       QGIS_SERVER_CACHE_SIZE: 200
       QGIS_SERVER_CAPABILITIES_CACHE_SIZE: 100
@@ -87,9 +83,6 @@ services:
       - { type: bind, source: "${LIZMAP_DIR}/etc", target: /srv/etc, read_only: true }
     ports:
       - ${OWS_PORT}:8080
-    depends_on:
-      postgis:
-        condition: service_healthy
     restart: unless-stopped
 
   web:
