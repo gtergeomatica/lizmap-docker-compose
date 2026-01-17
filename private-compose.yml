@@ -11,6 +11,7 @@ services:
       LIZMAP_HOME: /srv/lizmap
       LIZMAP_USER: ${LIZMAP_UID}
       LIZMAP_WMSSERVERURL: http://map-${SUFFIX_NAME}:8080/ows/
+      LIZMAP_LIZMAPPLUGINAPIURL: http://map-${SUFFIX_NAME}:8080/lizmap/
       LIZMAP_CONFIG_INCLUDE: /srv/etc
       PGSERVICEFILE: /srv/etc/pg_service.conf
       PGPASSFILE: /srv/etc/pgpass.conf
@@ -46,7 +47,7 @@ services:
         start_period: 10s
 
   map:
-    container_name: qgisserver-${SUFFIX_NAME}
+    container_name: map-${SUFFIX_NAME}
     image: 3liz/qgis-map-server:${QGIS_VERSION_TAG}
     user: ${LIZMAP_UID}:${LIZMAP_UID}
     environment:
