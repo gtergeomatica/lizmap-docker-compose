@@ -71,6 +71,8 @@ services:
       QGSRV_SERVER_RESTARTMON: /srv/.qgis-restart
       QGSRV_SERVER_WORKERS: ${QGIS_MAP_WORKERS}
       QGSRV_SERVER_TIMEOUT: 30
+    tmpfs:
+      - /tmp
     volumes:
       - { type: bind, source: "${LIZMAP_PROJECTS}", target: /srv/projects }
       - { type: bind, source: "${LIZMAP_DIR}/plugins", target: /srv/plugins }
