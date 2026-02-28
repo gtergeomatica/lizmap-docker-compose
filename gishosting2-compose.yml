@@ -9,7 +9,8 @@ services:
       LIZMAP_CACHESTORAGETYPE: redis
       LIZMAP_HOME: /srv/lizmap
       LIZMAP_USER: ${LIZMAP_UID}
-      LIZMAP_WMSSERVERURL: http://map:8080/ows/
+      LIZMAP_WMSSERVERURL: http://map-${SUFFIX_NAME}:8080/ows/
+      LIZMAP_LIZMAPPLUGINAPIURL: http://map-${SUFFIX_NAME}:8080/lizmap/
       LIZMAP_CONFIG_INCLUDE: /srv/etc
       PGSERVICEFILE: /srv/etc/pg_service.conf
       PGPASSFILE: /srv/etc/pgpass.conf
@@ -180,6 +181,8 @@ services:
       - "8800:8800"
     expose:
       - 8800
+    group_add:
+      - ${DOCKER_GROUPID:-119}
     volumes:
       - { type: bind, source: /var/run/docker.sock, target: /var/run/docker.sock }
       - { type: bind, source: ./, target: /mnt/shared_gishosting2/ }
@@ -240,6 +243,8 @@ services:
     container_name: gishosting2-cron-${SUFFIX_NAME}
     command: python manage.py run_huey
     working_dir: /gishosting2
+    group_add:
+      - ${DOCKER_GROUPID:-119}
     volumes:
       - { type: bind, source: /var/run/docker.sock, target: /var/run/docker.sock }
       - { type: bind, source: "${BACKUP_DATA_DIR}", target: "${BACKUP_DATA_DIR}" }
