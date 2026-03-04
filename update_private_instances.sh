@@ -40,6 +40,14 @@ docker start map-$USER
 
 docker cp /tmp/css/. lizmap-$USER:/www/lizmap/www/themes/default/css/
 rm -rf /tmp/css
+
+if [ $USER == "astercartogis" ]; then
+    docker cp ~/Aster.ttf map-astercartogis:/usr/share/fonts/truetype/msttcorefonts
+    # maybe restart the map container to load the new font
+    docker stop map-astercartogis
+    docker start map-astercartogis
+fi
+
 RED='\033[0;31m'
 echo -e "${RED}Remember to check the file $USER/var/lizmap-config/lizmapConfig.ini.php"
 cd ..
