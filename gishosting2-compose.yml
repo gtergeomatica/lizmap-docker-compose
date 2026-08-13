@@ -295,7 +295,7 @@ services:
     hostname: postgis-private-${SUFFIX_NAME}
     volumes:
       - { type: volume, source: postgis_private, target: /var/lib/postgresql/data }
-      - { type: bind, source: "${LIZMAP_DIR}/etc/postgres.init.d", target: /docker-entrypoint-initdb.d }
+      - { type: bind, source: "${LIZMAP_DIR}/etc/gishosting.init.d", target: /docker-entrypoint-initdb.d }
     environment:
       POSTGRES_DB: ${POSTGRES_LIZMAP_DB}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
